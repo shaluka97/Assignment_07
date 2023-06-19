@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -16,18 +18,12 @@ class valarray {
         return nextIndex;
     }
 
-//    public void add(String id, String name, String phone, String company, String dob, double salary) {
-//        if (nextIndex >= objarray.length) {
-//            extendArray();
-//        }
-//        objarray[nextIndex].id = id;
-//        objarray[nextIndex].name = name;
-//        objarray[nextIndex].phone = phone;
-//        objarray[nextIndex].company = company;
-//        objarray[nextIndex].dob = dob;
-//        objarray[nextIndex].salary = salary;
-//        nextIndex++;
-//    }
+    public void add(val contact, int index) {
+        if (nextIndex >= objarray.length) {
+            extendArray();
+        }
+        objarray[index] = contact;
+    }
 
     public void add(val contact) {
         if (nextIndex >= objarray.length) {
@@ -97,46 +93,47 @@ class valarray {
         return null;
     }
 
-    public val[] sort(int type) {
+    public valarray sort(int type) {
         val temp;
-        val[] temparray = new val[nextIndex];
+        valarray temparray = new valarray(nextIndex, loadfac);
         for (int i = 0; i < nextIndex; i++) {
-            temparray[i] = objarray[i];
+            temparray.add(objarray[i]);
         }
         switch (type) {
             case 1://Sort by name
-                for (int i = temparray.length - 1; i > 0; i--) {
+                for (int i = temparray.length() - 1; i > 0; i--) {
                     for (int j = 0; j < i; j++) {
-                        if (temparray[j].name.compareTo(temparray[j + 1].name) > 0) {
-                            temp = temparray[j + 1];
-                            temparray[j + 1] = temparray[j];
-                            temparray[j] = temp;
+                        if (temparray.get(j).name.compareTo(temparray.get(j + 1).name) > 0) {
+                            temp = temparray.get(j + 1);
+                            temparray.add(temparray.get(j), j + 1);
+                            temparray.add(temp, j);
                         }
                     }
                 }
-                break;
+                return temparray;
             case 2://Sort by salary
-                for (int i = temparray.length - 1; i > 0; i--) {
+                for (int i = temparray.length() - 1; i > 0; i--) {
                     for (int j = 0; j < i; j++) {
-                        if (temparray[j].salary > temparray[j + 1].salary) {
-                            temp = temparray[j + 1];
-                            temparray[j + 1] = temparray[j];
-                            temparray[j] = temp;
+                        if (temparray.get(j).salary < temparray.get(j + 1).salary) {
+                            temp = temparray.get(j + 1);
+                            temparray.add(temparray.get(j), j + 1);
+                            temparray.add(temp, j);
                         }
+
                     }
                 }
-                break;
+                return temparray;
             case 3://Sort by dob
-                for (int i = temparray.length - 1; i > 0; i--) {
+                for (int i = temparray.length() - 1; i > 0; i--) {
                     for (int j = 0; j < i; j++) {
-                        if (temparray[j].dob.compareTo(temparray[j + 1].dob) > 0) {
-                            temp = temparray[j + 1];
-                            temparray[j + 1] = temparray[j];
-                            temparray[j] = temp;
+                        if (temparray.get(j).dob.compareTo(temparray.get(j + 1).dob) > 0) {
+                            temp = temparray.get(j + 1);
+                            temparray.add(temparray.get(j), j + 1);
+                            temparray.add(temp, j);
                         }
                     }
                 }
-                break;
+                return temparray;
         }
         return null;
     }
@@ -207,6 +204,13 @@ public class iFriendContactOrganizer {
         }
         int num = Integer.parseInt(ar.get(ar.length() - 1).id.substring(1));
         return String.format("C%04d", num + 1);
+    }
+
+    public static void printarray(valarray ar) {
+        System.out.println("Contact ID\t\tName\t\tPhone Number\t\tCompany\t\tSalary\t\tBirthday");
+        for (int i = 0; i < ar.length(); i++) {
+            System.out.println(ar.get(i).id + "\t\t" + ar.get(i).name + "\t\t" + ar.get(i).phone + "\t\t" + ar.get(i).company + "\t\t" + ar.get(i).salary + "\t\t" + ar.get(i).dob);
+        }
     }
 
     public static void clearConsole() {
@@ -475,13 +479,65 @@ public class iFriendContactOrganizer {
     }
 
     public static void listcontact(valarray x) {
+        valarray temp;
+        Outer:
+        while (true) {
+            System.out.println();
+            System.out.println("+---------------------------------------------------------------+");
+            System.out.println("|\t\t\t\t\tSORT Contacts \t\t\t\t\t|");
+            System.out.println("+---------------------------------------------------------------+");
+            System.out.println();
+            System.out.println();
+            System.out.println("\t[1] Sorting by Name");
+            System.out.println("\t[2] Sorting by Salary");
+            System.out.println("\t[3] Sorting by Birthday");
+            System.out.println();
+            switch (Integer.parseInt(getuserinput("Enter an Option to continue ->"))) {
+                case 1:
+                    System.out.println();
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println("\t\t|\t\t\t\t\tLIST Contact by Name \t\t\t\t\t|");
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println();
+                    System.out.println();
+                    temp = x.sort(1);
+                    System.out.println();
+                    printarray(temp);
+                    break;
+                case 2:
+                    System.out.println();
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println("\t\t|\t\t\t\t\tLIST Contact by Salary \t\t\t\t\t|");
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println();
+                    System.out.println();
+                    temp = x.sort(2);
+                    System.out.println();
+                    printarray(temp);
+                    break;
+                case 3:
+                    System.out.println();
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println("\t\t|\t\t\t\t\tLIST Contact by Birthday \t\t\t\t\t|");
+                    System.out.println("\t\t+---------------------------------------------------------------+");
+                    System.out.println();
+                    System.out.println();
+                    temp = x.sort(3);
+                    System.out.println();
+                    printarray(temp);
+                    break;
+            }
+            System.out.println();
+            if(exitop("go to Home page")){
+                break;
+            }
+
+        }
 
 
     }
 
-
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
         valarray temp1 = new valarray(100, 50);
         valarray temp2 = new valarray(100, 50);
         val temp3;
@@ -490,7 +546,7 @@ public class iFriendContactOrganizer {
         String[] name = {"shaluka", "bhanuka", "chanuka", "amith", "perera"};
         String[] phone = {"0758878585", "0728566742", "0758899333", "0658899331", "0728878585"};
         String[] company = {"LSEG", "SYSCO", "WSO2", "SYNOPSYS", "MIT"};
-        String[] dob = {"1997-04-04", "1997-05-05", "1994-04-04", "1991-03-03", "1996-05-05"};
+        String[] dob = {"1997-04-04", "1997-05-05", "1994-04-01", "1991-03-03", "1996-05-05"};
         double[] salary = {750000.00, 850000.00, 150000.00, 2000000.00, 50000.00};
 
 
@@ -520,9 +576,7 @@ public class iFriendContactOrganizer {
             System.out.println("		[5] LIST Contacts");
             System.out.println("		[6] Exit");
             System.out.println();
-            System.out.print("Enter an Option to continue -> ");
-            int option = input.nextInt();
-            switch (option) {
+            switch (Integer.parseInt(getuserinput("Enter an Option to continue ->"))) {
                 case 1:
                     clearConsole();
                     addcontact(temp1);
