@@ -4,100 +4,134 @@ import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-class valarray {
-    private val[] objarray;
-    private int nextIndex = 0;
-    private final int loadfac;
-
-    valarray(int size, int loadfac) {
-        this.loadfac = loadfac;
-        objarray = new val[size];
-    }
+class CustomerList {
+    private Customer first;
 
     public int length() {
-        return nextIndex;
-    }
-
-    public void add(val contact, int index) {
-        if (nextIndex >= objarray.length) {
-            extendArray();
+        int count = 0;
+        Customer temp = first;
+        while (temp != null) {
+            count++;
+            temp = temp.next;
         }
-        objarray[index] = contact;
+        return count;
     }
 
-    public void add(val contact) {
-        if (nextIndex >= objarray.length) {
-            extendArray();
-        }
-        objarray[nextIndex++] = contact;
+    private boolean isValidIndex(int index) {
+        return index >= 0 && index <= length();
     }
 
-    public int search(String val) {
-        if (val != null && objarray[0] != null) {
-            for (int i = 0; i < nextIndex; i++) {
-                if (Objects.equals(objarray[i].name, val)) {
-                    return i;
-                }
-                if (Objects.equals(objarray[i].phone, val)) {
-                    return i;
-                }
+    private boolean isempty() {
+        return first == null;
+    }
+
+    public void add(Customer customer) {
+        Customer Newcustomer = new Customer(customer);
+        if (first == null) {
+            first = Newcustomer;
+        } else {
+            Customer lastcutomer = first;
+            while (lastcutomer.next != null) {
+                lastcutomer = lastcutomer.next;
             }
+            lastcutomer.next = Newcustomer;
+        }
+    }
+
+    public void add(Customer customer, int index) {
+        Customer Newcustomer = new Customer(customer);
+        if (isValidIndex(index)) {
+            if (index == 0) {
+                Newcustomer.next = first;
+                first = Newcustomer;
+            } else {
+                Customer temp = first;
+                for (int i = 1; i < index; i++) {
+                    temp = temp.next;
+                }
+                Newcustomer.next = temp.next;
+                temp.next = Newcustomer;
+            }
+        }
+    }
+
+    public int indexof(String searchstring) {
+        Customer temp = first;
+        int index = -1;
+        while (temp != null) {
+            index++;
+            if (Objects.equals(temp.name, searchstring)) {
+                return index;
+            }
+            if (Objects.equals(temp.phone, searchstring)) {
+                return index;
+            }
+            temp = temp.next;
         }
         return -1;
     }
 
-//    public int search(double val) {
-//        for (int i = 0; i < objarray.length; i++) {
-//            if (objarray[i].salary == val) {
-//                return i;
-//            }
-//        }
-//        return -1;
-//    }
-
     public void set(String val, int index, int type) {
-        if (index >= 0 && index <= nextIndex) {
+        if (isValidIndex(index)) {
+            Customer temp = get(index);
             switch (type) {
                 case 1:
-                    objarray[index].name = val;
+                    temp.name = val;
                     break;
                 case 2:
-                    objarray[index].phone = val;
+                    temp.phone = val;
                     break;
                 case 3:
-                    objarray[index].company = val;
+                    temp.company = val;
                     break;
             }
+            add(temp, index);
         }
     }
 
-    public void set(double val, int index) {
-        if (index >= 0 && index <= nextIndex) {
-            objarray[index].salary = val;
+    public void set(double salary, int index) {
+        if (isValidIndex(index)) {
+            Customer temp = get(index);
+            temp.salary = salary;
+            add(temp, index);
         }
     }
 
     public void delete(int index) {
-        if (index >= 0 && index <= nextIndex) {
-            for (int i = index; i < nextIndex - 1; i++) {
-                objarray[i] = objarray[i + 1];
+        if (isValidIndex(index)) {
+            if (index == 0) {
+                first = first.next;
+            } else {
+                Customer temp = first;
+                for (int i = 0; i < index - 1; i++) {
+                    temp = temp.next;
+                }
+                temp.next = temp.next.next;
             }
-            nextIndex--;
         }
     }
 
-    public val get(int index) {
-        if (index >= 0 && index <= nextIndex) {
-            return objarray[index];
+    public Customer get(int index) {
+        if (isValidIndex(index)) {
+            if (index == 0) {
+                return first;
+            } else {
+                Customer temp = first;
+                for (int i = 0; i < index; i++) {
+                    temp = temp.next;
+                }
+                return temp;
+            }
         }
         return null;
     }
 
-    public valarray sort(int type) {
-        val temp;
-        valarray temparray = new valarray(nextIndex, loadfac);
-        for (int i = 0; i < nextIndex; i++) {
-            temparray.add(objarray[i]);
+    public CustomerList sort(int type) {
+        Customer temp = first;
+        CustomerList temparray = new CustomerList();
+        while (temp != null) {
+            temparray.add(temp);
+            temp = temp.next;
         }
         switch (type) {
             case 1://Sort by name
@@ -138,17 +172,11 @@ class valarray {
         return null;
     }
 
-    private void extendArray() {
-        val[] exarray = new val[objarray.length + loadfac];
-        for (int i = 0; i < nextIndex; i++) {
-            exarray[i] = objarray[i];
-        }
-        objarray = exarray;
-    }
 
 }
 
-class val {
+class Customer {
+    public Customer next;
     public String id;
     public String name;
     public String phone;
@@ -156,14 +184,17 @@ class val {
     public String dob;
     public double salary;
 
-    val(String id, String name, String phone, String company, String dob, double salary) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.company = company;
-        this.dob = dob;
-        this.salary = salary;
+    Customer(Customer defaultCustomer) {
+        this.next = defaultCustomer.next;
+        this.id = defaultCustomer.id;
+        this.name = defaultCustomer.name;
+        this.phone = defaultCustomer.phone;
+        this.company = defaultCustomer.company;
+        this.dob = defaultCustomer.dob;
+        this.salary = defaultCustomer.salary;
+    }
 
+    Customer() {
     }
 }
 
@@ -198,7 +229,7 @@ public class iFriendContactOrganizer {
 
     }
 
-    public static String uniqueid(valarray ar) {
+    public static String uniqueid(CustomerList ar) {
         if (ar.length() == 0 || ar.get(0) == null) {
             return "C0001";
         }
@@ -206,7 +237,7 @@ public class iFriendContactOrganizer {
         return String.format("C%04d", num + 1);
     }
 
-    public static void printarray(valarray ar) {
+    public static void printarray(CustomerList ar) {
         System.out.println("Contact ID\t\tName\t\tPhone Number\t\tCompany\t\tSalary\t\tBirthday");
         for (int i = 0; i < ar.length(); i++) {
             System.out.println(ar.get(i).id + "\t\t" + ar.get(i).name + "\t\t" + ar.get(i).phone + "\t\t" + ar.get(i).company + "\t\t" + ar.get(i).salary + "\t\t" + ar.get(i).dob);
@@ -241,10 +272,10 @@ public class iFriendContactOrganizer {
         return Exitop == 'Y' || Exitop == 'y';
     }
 
-    public static void addcontact(valarray x) {
+    public static void addcontact(CustomerList x) {
         Outer:
         while (true) {
-            val temp = new val("null", "null", "null", "null", "null", 0.0);
+            Customer temp = new Customer();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             Date date = new Date();
             formatter.format(date);
@@ -317,7 +348,7 @@ public class iFriendContactOrganizer {
         }
     }
 
-    public static void updatecontact(valarray x) {
+    public static void updatecontact(CustomerList x) {
         int index;
         String msg;
         double sal;
@@ -328,8 +359,8 @@ public class iFriendContactOrganizer {
             System.out.println("|\t\t\t\t\tUPDATE Contact \t\t\t\t\t|");
             System.out.println("+---------------------------------------------------------------+");
             System.out.println();
-            index = x.search(getuserinput("Search Contact by Name or Phone Number - "));
-            val temp = x.get(index);
+            index = x.indexof(getuserinput("Search Contact by Name or Phone Number - "));
+            Customer temp = x.get(index);
             if (temp == null) {
                 System.out.println("\t No Contact found ...  ");
                 System.out.println();
@@ -406,7 +437,7 @@ public class iFriendContactOrganizer {
         }
     }
 
-    public static void searchcontact(valarray x) {
+    public static void searchcontact(CustomerList x) {
         int index;
         Outer:
         while (true) {
@@ -416,8 +447,8 @@ public class iFriendContactOrganizer {
             System.out.println("+---------------------------------------------------------------+");
             System.out.println();
             System.out.println();
-            index = x.search(getuserinput("Search Contact by Name or Phone Number - "));
-            val temp = x.get(index);
+            index = x.indexof(getuserinput("Search Contact by Name or Phone Number - "));
+            Customer temp = x.get(index);
             if (temp == null) {
                 System.out.println("\t No Contact found ...  ");
                 System.out.println();
@@ -441,7 +472,7 @@ public class iFriendContactOrganizer {
 
     }
 
-    public static void deletecontact(valarray x) {
+    public static void deletecontact(CustomerList x) {
         int index;
         while (true) {
             System.out.println();
@@ -449,8 +480,8 @@ public class iFriendContactOrganizer {
             System.out.println("|\t\t\t\t\tDELETE Contact \t\t\t\t\t|");
             System.out.println("+---------------------------------------------------------------+");
             System.out.println();
-            index = x.search(getuserinput("Search Contact by Name or Phone Number - "));
-            val temp = x.get(index);
+            index = x.indexof(getuserinput("Search Contact by Name or Phone Number - "));
+            Customer temp = x.get(index);
             if (temp == null) {
                 clearConsole();
                 continue;
@@ -478,10 +509,10 @@ public class iFriendContactOrganizer {
 
     }
 
-    public static void listcontact(valarray x) {
-        valarray temp;
+    public static void listcontact(CustomerList x) {
+        CustomerList temp;
         Outer:
-        while (true) {
+        do {
             System.out.println();
             System.out.println("+---------------------------------------------------------------+");
             System.out.println("|\t\t\t\t\tSORT Contacts \t\t\t\t\t|");
@@ -528,19 +559,16 @@ public class iFriendContactOrganizer {
                     break;
             }
             System.out.println();
-            if(exitop("go to Home page")){
-                break;
-            }
 
-        }
+        } while (!exitop("go to Home page"));
 
 
     }
 
     public static void main(String[] args) {
-        valarray temp1 = new valarray(100, 50);
-        valarray temp2 = new valarray(100, 50);
-        val temp3;
+        CustomerList templist1 = new CustomerList();
+        CustomerList templist2 = new CustomerList();
+        Customer temp3 = new Customer();
 
         String[] id = {"C0001", "C0002", "C0003", "C0004", "C0005"};
         String[] name = {"shaluka", "bhanuka", "chanuka", "amith", "perera"};
@@ -549,16 +577,15 @@ public class iFriendContactOrganizer {
         String[] dob = {"1997-04-04", "1997-05-05", "1994-04-01", "1991-03-03", "1996-05-05"};
         double[] salary = {750000.00, 850000.00, 150000.00, 2000000.00, 50000.00};
 
-
-//        for (int i = 0; i < id.length; i++) {
-//            temp2.add(id[i], name[i], phone[i], company[i], dob[i], salary[i]);
-//        }
-
         for (int i = 0; i < id.length; i++) {
-            temp3 = new val(id[i], name[i], phone[i], company[i], dob[i], salary[i]);
-            temp2.add(temp3);
+            temp3.id = id[i];
+            temp3.name = name[i];
+            temp3.phone = phone[i];
+            temp3.company = company[i];
+            temp3.dob = dob[i];
+            temp3.salary = salary[i];
+            templist2.add(temp3);
         }
-
 
         Outer:
         while (true) {
@@ -579,23 +606,23 @@ public class iFriendContactOrganizer {
             switch (Integer.parseInt(getuserinput("Enter an Option to continue ->"))) {
                 case 1:
                     clearConsole();
-                    addcontact(temp1);
+                    addcontact(templist1);
                     break;
                 case 2:
                     clearConsole();
-                    updatecontact(temp2);
+                    updatecontact(templist2);
                     break;
                 case 3:
                     clearConsole();
-                    deletecontact(temp1);
+                    deletecontact(templist1);
                     break;
                 case 4:
                     clearConsole();
-                    searchcontact(temp1);
+                    searchcontact(templist1);
                     break;
                 case 5:
                     clearConsole();
-                    listcontact(temp2);
+                    listcontact(templist2);
                     break;
                 case 6:
                     System.out.println("Exiting the Programme");
